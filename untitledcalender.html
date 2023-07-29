@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calendar Generator</title>
+</head>
+<body>
+  <h1>Calendar Generator</h1>
+  
+  <form id="calendarForm">
+    <label for="yearInput">Select a year:</label>
+    <input type="number" id="yearInput" min="1">
+    <br>
+    <label for="nameInput">Enter your name:</label>
+    <input type="text" id="nameInput">
+    <br>
+    <label for="bgImageInput">Upload a background image:</label>
+    <input type="file" id="bgImageInput" accept="image/*">
+    <br>
+    <button type="button" onclick="generateCalendar()">Download Calendar</button>
+  </form>
+  
+  <script>
+    function generateCalendar() {
+      var yearInput = document.getElementById('yearInput');
+      var nameInput = document.getElementById('nameInput');
+      var bgImageInput = document.getElementById('bgImageInput');
+      
+      var year = parseInt(yearInput.value);
+      var name = nameInput.value;
+      
+      if (isNaN(year) || year <= 0) {
+        alert('Please enter a valid year (greater than 0).');
+        return;
+      }
+      
+      if (name.trim() === '') {
+        alert('Please enter your name.');
+        return;
+      }
+      
+      var calendarHTML = generateCalendarHTML(year, name);
+      var fileName = 'anshpreetserver_' + name.toLowerCase().replace(/\s/g, '') + '_' + year + '.html';
+      
+      // Read the uploaded image file
+      var fileReader = new FileReader();
+      fileReader.onload = function(e) {
+        var bgImageUrl = e.target.result;
+        calendarHTML = calendarHTML.replace('{{bgImage}}', bgImageUrl); // Replace placeholder with image URL
+        
+        var downloadLink = document.createElement('a');
+        downloadLink.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(calendarHTML);
+        downloadLink.download = fileName;
+        downloadLink.click();
+      };
+      
+      var bgImageFile = bgImageInput.files[0];
+      
+      if (bgImageFile) {
+        fileReader.readAsDataURL(bgImageFile);
+      } else {
+        calendarHTML = calendarHTML.replace('{{bgImage}}', ''); // Replace placeholder with empty string
+        
+        var downloadLink = document.createElement('a');
+        downloadLink.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(calendarHTML);
+        downloadLink.download = fileName;
+        downloadLink.click();
+      }
+    }
+    
+    function generateCalendarHTML(year, name) {
+      var startDate = new Date(year, 0, 1); // January 1st of the selected year
+      var endDate = new Date(year, 11, 31); // December 31st of the selected year
+      
+      var calendarHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${name}'s Calendar for ${year}</title>
+          <style>
+            body {
+              background-image: url('{{bgImage}}');
+              background-size: cover;
+              background-repeat: no-repeat;
+              background-position: center;
+            }
+            table {
+              border-collapse: collapse;
+            }
+            td {
+              border: 1px solid black;
+              padding: 5px;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${name}'s Calendar for ${year}</h1>
+      `;
+      
+      var currentDate = startDate;
+      
+      while (currentDate <= endDate) {
+        var month = currentDate.getMonth();
+        var monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(currentDate);
+        var daysInMonth = new Date(currentDate.getFullYear(), month + 1, 0).getDate();
+        
+        calendarHTML += `
+          <h2>${monthName}</h2>
+          <table>
+            <tr>
+              <th>Sun</th>
+              <th>Mon</th>
+              <th>Tue</th>
+              <th>Wed</th>
+              <th>Thu</th>
+              <th>Fri</th>
+              <th>Sat</th>
+            </tr>
+            <tr>
+        `;
+        
+        var firstDayOfWeek = new Date(currentDate.getFullYear(), month, 1).getDay();
+        
+        // Add empty cells for the days before the first day of the month
+        for (var i = 0; i < firstDayOfWeek; i++) {
+          calendarHTML += '<td></td>';
+        }
+        
+        for (var day = 1; day <= daysInMonth; day++) {
+          calendarHTML += `<td>${day}</td>`;
+          
+          var currentDayOfWeek = new Date(currentDate.getFullYear(), month, day).getDay();
+          
+          // Start a new row at the end of the week
+          if (currentDayOfWeek === 6 && day !== daysInMonth) {
+            calendarHTML += '</tr><tr>';
+          }
+        }
+        
+        calendarHTML += `
+            </tr>
+          </table>
+        `;
+        
+        currentDate.setMonth(currentDate.getMonth() + 1);
+      }
+      
+      calendarHTML += `
+          <button onclick="window.print()">Print</button>
+        </body>
+        </html>
+      `;
+      
+      return calendarHTML;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+	
+	body {
+  background-image: url('{{bgImage}}');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  border: 1px solid black;
+  padding: 5px;
+  text-align: center;
+}
+
+input[type="number"],
+input[type="text"],
+input[type="file"],
+button[type="button"] {
+  border: 2px solid #ccc;
+  padding: 5px;
+  transition: box-shadow 0.3s ease;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+input[type="file"]:focus,
+button[type="button"]:focus {
+  outline: none;
+  box-shadow: 0 0 5px #6c63ff;
+}
+
+button[type="button"] {
+  background-color: #ff68a0;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+button[type="button"]:hover {
+  background-color: #ff4f87;
+}
+
+button[type="button"]:hover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: hoverEffect 1s ease-in-out infinite;
+}
+
+@keyframes hoverEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeBackground {
+  0% {
+    background-color: #f7f7f7;
+  }
+  50% {
+    background-color: #ededed;
+  }
+  100% {
+    background-color: #f7f7f7;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  animation: fadeBackground 5s linear infinite;
+}
+
+	
+	
+	
+	
+	
+	
+	</style>
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff68a0">
+  	
+
+
+
